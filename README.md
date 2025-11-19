@@ -1,84 +1,72 @@
-Below is the fully adapted version for your **LLMOps Medical Chatbot – Initial Project Setup**.
-It uses **your new tree structure exactly as shown in the screenshot**, keeps your preferred formatting, and mirrors the structure and tone of your example.
+# 🧩 **PDF Loader Component — LLMOps Medical Chatbot**
 
-No horizontal rules used.
+This branch introduces the **PDF ingestion component** for the LLMOps Medical Chatbot.
+It adds functionality for loading medical PDF files and converting them into text chunks for downstream retrieval and LLM reasoning.
 
----
-
-# 🏗️ **Initial Project Setup — LLMOps Medical Chatbot**
-
-This branch establishes the foundational structure for the **LLMOps Medical Chatbot** project.
-It introduces a clean modular application layout, secure environment configuration, and shared utility components for logging and exception handling.
-
-These elements form the backbone for later branches involving medical-domain retrieval, LLM reasoning, and chatbot interfaces.
-
-## 🗂️ **Project Structure**
+## 🗂️ **Project Structure (Updated)**
 
 ```text
 LLMOPS-MEDICAL-CHATBOT/
-├── .venv/                                # Virtual environment
-├── .env                                  # Environment variables (HF + Groq API keys)
-├── .gitignore                            # Git ignore rules
-├── .python-version                       # Python version pin
-├── pyproject.toml                        # Project metadata and dependency configuration
-├── README.md                             # Root project documentation
-├── requirements.txt                      # Python dependencies
-├── setup.py                              # Editable install configuration
+├── .venv/
+├── .env
+├── .gitignore
+├── .python-version
+├── pyproject.toml
+├── README.md
+├── requirements.txt
+├── setup.py
 │
 ├── data/
-│   └── The_GALE_ENCYCLOPEDIA_OF_MEDICINE_SECOND.pdf   # Initial medical knowledge source
+│   └── The_GALE_ENCYCLOPEDIA_OF_MEDICINE_SECOND.pdf
 │
-└── app/                                  # Application package
-    ├── __init__.py                       # Marks app directory as a package
+└── app/
+    ├── __init__.py
     │
-    ├── common/                           # Shared utilities for reliability
+    ├── common/
     │   ├── __init__.py
-    │   ├── custom_exception.py           # Context-rich exception handling
-    │   ├── logger.py                     # Centralised logging configuration
-    │   └── README.md                     # Documentation for common utilities
+    │   ├── custom_exception.py
+    │   ├── logger.py
+    │   └── README.md
     │
-    ├── config/                           # Configuration and environment loading
+    ├── config/
     │   ├── __init__.py
-    │   ├── config.py                     # Loads environment vars and global settings
-    │   └── README.md                     # Documentation for config management
+    │   ├── config.py
+    │   └── README.md
     │
-    ├── components/                       # Core chatbot components (to be implemented)
-    │   └── __init__.py
+    ├── components/
+    │   ├── __init__.py
+    │   └── pdf_loader.py                # NEW: Loads PDFs and creates text chunks
     │
-    └── templates/                        # HTML templates for the future UI (to be implemented)
+    └── templates/
 ```
 
-> 💡 The `.env` file contains sensitive API keys (`HF_TOKEN`, `GROQ_API_KEY`) and must never be committed to version control.
+> 💡 The `.env` file holds sensitive API keys and should never be committed to version control.
 
 ## ⚙️ **What Was Done in This Branch**
 
-1. **Created the base project structure**
+1. **Introduced the `pdf_loader.py` component**
 
-   * Added the `app/` package with `common`, `config`, `components`, and `templates`.
-   * Introduced initial module placeholders (`__init__.py`) for package cohesion.
+   * Implemented functionality to load PDFs from the `data/` directory.
+   * Added text-chunking using LangChain v1’s `RecursiveCharacterTextSplitter`.
+   * Integrated logging and custom exception handling for robust ingestion.
 
-2. **Environment and dependency setup**
+2. **Aligned imports with LangChain v1 ecosystem**
 
-   * Created a new virtual environment.
-   * Added a base `requirements.txt` including LangChain v1 libraries, Groq integration, and supporting packages.
+   * Updated all loaders, splitters, and document classes to their correct v1 locations.
+   * Ensured compatibility with `langchain-community`, `langchain-text-splitters`, and `langchain-core`.
 
-3. **Centralised configuration**
+3. **Structured the file in the project style**
 
-   * Added `.env` for API keys.
-   * Implemented `app/config/config.py` to load environment variables and define global paths, model IDs, and chunking parameters.
-
-4. **Reliability utilities**
-
-   * Implemented `custom_exception.py` for structured, well-documented error handling.
-   * Implemented `logger.py` for consistent logging across all chatbot modules.
-   * Added a README for the `common/` folder documenting usage.
+   * Included file-level documentation.
+   * Added NumPy-style function docstrings.
+   * Added type hints and intuitive inline comments.
+   * Used section comment blocks for readability.
 
 ## ✅ **Summary**
 
-This setup branch provides the essential foundation for the Medical Chatbot:
+This branch adds the first major functional component to the Medical Chatbot:
 
-* Modular and scalable project layout
-* Secure environment variable handling
-* Shared logging and exception modules
-* Initial data placed under `data/`
-* Ready-made folders for future RAG pipeline, UI, and LLM logic
+* PDF ingestion using modern LangChain v1 modules
+* Robust logging and exception handling
+* Clean, modular placement inside `app/components/`
+* Fully prepared data chunks for future embedding and retrieval steps
