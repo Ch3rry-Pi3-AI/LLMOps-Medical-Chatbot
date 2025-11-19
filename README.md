@@ -1,7 +1,7 @@
-# 🧩 **Embedding Model Component — LLMOps Medical Chatbot**
+# 🧩 **Vector Store Component — LLMOps Medical Chatbot**
 
-This branch introduces the **embedding model component** for the LLMOps Medical Chatbot.
-It adds support for generating text embeddings using a HuggingFace sentence-transformer model, which is required for building the vector store and enabling semantic search during medical question-answering.
+This branch introduces the **vector store component** for the LLMOps Medical Chatbot.
+It enables the creation, saving, and loading of a FAISS vector store built from embedded medical text chunks, forming the foundation of the chatbot’s retrieval system.
 
 ## 🗂️ **Project Structure (Updated)**
 
@@ -36,7 +36,8 @@ LLMOPS-MEDICAL-CHATBOT/
     ├── components/
     │   ├── __init__.py
     │   ├── pdf_loader.py
-    │   └── embeddings.py                # NEW: Initialises the HuggingFace embedding model
+    │   ├── embeddings.py
+    │   └── vector_store.py              # NEW: Loads, creates, and saves the FAISS vector store
     │
     └── templates/
 ```
@@ -45,33 +46,30 @@ LLMOPS-MEDICAL-CHATBOT/
 
 ## ⚙️ **What Was Done in This Branch**
 
-1. **Added the `embeddings.py` component**
+1. **Added the `vector_store.py` component**
 
-   * Implemented `get_embedding_model()` to load a HuggingFace transformer for embedding text chunks.
-   * Integrated the component with the project’s logging and custom exception system.
-   * Ensured the implementation follows the project’s formatting conventions:
+   * Implemented functions to load an existing FAISS vector store and to create/save a new one.
+   * Integrated the component with the project’s embedding model loader.
+   * Ensured robust error handling using `CustomException`.
 
-     * File-level docstring
-     * NumPy-style function docstrings
-     * Type hints
-     * Section comment blocks
-     * Clear inline comments
+2. **Implemented LangChain v1-compliant functionality**
 
-2. **Updated imports to LangChain v1 standards**
+   * Adopted `langchain-community` for FAISS vector store utilities.
+   * Ensured compatibility with v1 ecosystem imports (`langchain_core.documents`, `langchain_huggingface`, etc.).
 
-   * Adopted `langchain-huggingface` for the embedding wrapper.
-   * Ensured compatibility with the current LangChain v1 ecosystem.
+3. **Applied full project-wide formatting and structure**
 
-3. **Prepared the embedding layer for downstream retrieval**
-
-   * Output model instance is ready for use in vector store generation.
-   * Forms the second major functional piece of the chatbot pipeline.
+   * File-level documentation
+   * NumPy-style function docstrings
+   * Type hints
+   * Section comment blocks
+   * Clear inline comments for readability
 
 ## ✅ **Summary**
 
-This branch adds the Medical Chatbot’s embedding layer:
+This branch adds the Medical Chatbot’s vector store layer:
 
-* HuggingFace embedding model initialisation
-* Fully structured error handling and logging
-* Modern, v1-compatible LangChain imports
-* Seamless integration with the existing components folder
+* FAISS vector store loading, saving, and creation
+* Full compatibility with the LangChain v1 ecosystem
+* Clean integration with the embeddings and PDF loader components
+* Forms the third major functional component of the chatbot pipeline
