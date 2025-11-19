@@ -16,6 +16,6 @@ Responsible for initialising the HuggingFace embedding model used to convert tex
 
 Responsible for loading an existing FAISS vector store from disk or creating and saving a new FAISS vector store using embedded text chunks.
 
-### **pipeline.py**
+### **data_loader.py**
 
 Responsible for orchestrating the full PDF → chunking → vector store creation workflow by combining the loader, chunker, and vector store components.
