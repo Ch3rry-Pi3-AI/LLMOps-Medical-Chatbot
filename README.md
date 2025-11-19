@@ -1,10 +1,3 @@
-Below is the fully adapted version for your **LLMOps Medical Chatbot – Initial Project Setup**.
-It uses **your new tree structure exactly as shown in the screenshot**, keeps your preferred formatting, and mirrors the structure and tone of your example.
-
-No horizontal rules used.
-
----
-
 # 🏗️ **Initial Project Setup — LLMOps Medical Chatbot**
 
 This branch establishes the foundational structure for the **LLMOps Medical Chatbot** project.
