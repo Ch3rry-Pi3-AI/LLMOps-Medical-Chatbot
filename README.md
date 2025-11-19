@@ -1,9 +1,13 @@
 # 🖥️ **Flask Application Layer — LLMOps Medical Chatbot**
 
-This branch introduces the **full Flask web application layer** for the LLMOps Medical Chatbot.
-It connects the previously completed RAG retrieval system to a clean, modern, user-friendly browser interface using Flask, Jinja templates, and a fully styled CSS layout.
+This branch introduces the **complete Flask web application layer** for the LLMOps Medical Chatbot.
+It transforms the backend RAG pipeline into a fully interactive browser-based chat interface with a clean layout, user-friendly controls, and full integration with the retrieval system.
 
-This is the first branch where the chatbot becomes a complete interactive web app.
+<p align="center">
+  <img src="img/flask/flask_app.gif" alt="Flask Chatbot Demo" width="100%">
+</p>
+
+This is the branch where the project becomes a functional medical chatbot that users can interact with directly through the web.
 
 ## 🗂️ **Project Structure (Updated)**
 
@@ -22,7 +26,7 @@ LLMOPS-MEDICAL-CHATBOT/
 │   └── The_GALE_ENCYCLOPEDIA_OF_MEDICINE_SECOND.pdf
 │
 └── app/
-    ├── application.py            # NEW: Full Flask app + routes + session logic
+    ├── application.py            # NEW: Flask routes, session logic, RAG invocation
     │
     ├── common/
     │   ├── custom_exception.py
@@ -40,98 +44,96 @@ LLMOPS-MEDICAL-CHATBOT/
     │   └── retriever.py
     │
     ├── templates/
-    │   └── index.html            # NEW: Jinja-based chat UI template
+    │   └── index.html            # NEW: Jinja HTML template for chat UI
     │
     └── static/
-        └── style.css             # NEW: Full custom CSS for the chat interface
+        └── style.css             # NEW: Full UI stylesheet
 ```
 
 ## ⚙️ **What Was Implemented in This Branch**
 
-### 🧠 1. **Completed `application.py` — the Flask Controller**
+### 🧠 1. `application.py` — Complete Flask Controller
 
-The Flask module now includes:
+This module now handles:
 
-* A full HTTP route for chat interaction
-* User message handling through Flask session storage
-* Assistant replies generated via the RAG chain
-* A safe `nl2br` Jinja filter for newline formatting
-* Error handling with user-facing messages
+* Flask app creation
+* Session-based message history
+* The `nl2br` Jinja filter
+* Direct invocation of the RAG retrieval chain
+* Error handling and user-facing notifications
 * Clean message sanitisation
-* Clear and documented helper functions
+* GET + POST handling for full chat interaction
+* Clear chat functionality
 
-All functions include:
+All functions follow your documentation standards:
 
 * NumPy-style docstrings
 * Type hints
-* Section headers
-* Clean, intuitive inline comments
+* Section-level comment blocks
+* Intuitive inline explanations
 
-### 🖥️ 2. **Created `index.html` — the Chat UI Template**
+### 🖥️ 2. `index.html` — Full Chat Interface Template
 
-The new HTML template provides:
+The new HTML template includes:
 
-* A fully structured chat interface
-* User and assistant message display
-* Online status indicator
-* Clear error banners
-* Textarea input panel
-* Example prompts for empty state
-* Auto-scrolling behaviour
+* Title, subtitle, and online status indicator
+* Structured display of user and assistant messages
+* Error banners when backend issues occur
+* Empty-state instructional messages
+* Textarea input with Send and Clear buttons
 * Medical disclaimer footer
+* Auto-scroll JavaScript for usability
 
-The template is thoroughly documented and uses your preferred Jinja structure.
+The template is fully documented with clear, readable comments.
 
-### 🎨 3. **Created `style.css` — the Chat Interface Styling**
+### 🎨 3. `style.css` — Complete UI Styling
 
-A complete, modern UI theme was implemented:
+The stylesheet defines the entire look and feel of the chatbot:
 
 * Centre-aligned card layout
-* Gradient header with status indicator
-* Scrollable chat container
-* Message blocks with clean role labels
-* Input panel with styled textarea and buttons
-* Alerts, empty states, and footer design
+* Gradient header design
+* Scrollable chat panel with custom scrollbar
+* User and assistant message blocks
+* Button styling and hover transitions
+* Empty-state styling
+* Footer with legal disclaimers
 * Accessibility helpers (e.g., `.sr-only`)
 
-The file includes:
+It includes a full NumPy-style documentation block and consistent inline comments above each section.
 
-* A full NumPy-style docstring at the top
-* Inline comments above each block
-* Clear sectioning for readability
+### 🔗 4. Integration With RAG Retrieval Pipeline
 
-### 🔗 4. **Full Integration With RAG Pipeline**
+This branch successfully attaches the Flask UI to the underlying LCEL RAG chain.
+When users submit a medical question:
 
-The web interface now connects directly to the RAG retrieval chain created in earlier branches.
-When users enter a question, the following pipeline executes:
+* The RAG retriever fetches context
+* The LLM generates a grounded answer
+* The assistant response appears instantly in the chat UI
 
-* Flask receives the input
-* `retriever.py` RAG chain is invoked
-* Context-aware medical answer is generated
-* Result is displayed in a structured UI
-
-This marks the first fully interactive version of the chatbot.
+This brings the entire system together into a cohesive user experience.
 
 ## 🧪 **Application Status**
 
-The Flask UI launches successfully and:
+The chatbot now:
 
-* Stores chat histories per session
-* Renders messages cleanly
-* Displays assistant responses correctly
-* Handles errors gracefully
-* Scrolls automatically to the newest message
-* Supports clearing the conversation
+* Loads correctly in the browser
+* Displays messages cleanly
+* Accepts user input
+* Generates responses via the RAG chain
+* Handles and displays errors gracefully
+* Scrolls chat to the most recent message
+* Allows the user to clear the conversation at any time
 
-The app is now fully functional for local testing.
+It is fully functional for local usage.
 
 ## ✅ **Summary**
 
-This branch delivers the **complete user-facing interface** of the LLMOps Medical Chatbot:
+This branch delivers the **complete front-end application** of the LLMOps Medical Chatbot:
 
-* Fully implemented Flask backend (`application.py`)
-* Clean, modern HTML template (`index.html`)
-* Beautifully styled CSS (`style.css`)
-* Integration with the RAG retrieval system
+* Flask backend with well-structured routes
+* Fully documented HTML template
+* Fully documented CSS stylesheet
+* Interactive chat UI
+* Working integration with the retrieval-augmented medical answer engine
 
-This completes the transition from a backend-only RAG pipeline to a fully interactive web-based medical chatbot.
+The project now operates as a full web-based medical chatbot.
