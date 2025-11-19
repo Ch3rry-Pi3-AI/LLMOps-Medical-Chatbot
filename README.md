@@ -1,4 +1,4 @@
-# 🧩 **Embedding Model Component — LLMOps Medical Chatbot**
+# 🧬 **Embedding Model Component — LLMOps Medical Chatbot**
 
 This branch introduces the **embedding model component** for the LLMOps Medical Chatbot.
 It adds support for generating text embeddings using a HuggingFace sentence-transformer model, which is required for building the vector store and enabling semantic search during medical question-answering.
