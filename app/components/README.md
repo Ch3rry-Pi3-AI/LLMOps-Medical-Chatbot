@@ -23,3 +23,7 @@ Responsible for orchestrating the full PDF → chunking → vector store creatio
 ### **llm.py**
 
 Responsible for loading a Groq-hosted LLM using the `ChatGroq` interface for downstream inference and medical question-answering.
+
+### **retriever.py**
+
+Responsible for building the retrieval-augmented generation (RAG) pipeline that combines the vector store retriever, Groq-hosted LLM, and custom medical prompt into a single runnable QA chain.
