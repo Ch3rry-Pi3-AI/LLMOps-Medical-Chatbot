@@ -1,0 +1,202 @@
+<!--
+===============================================================================
+index.html — Main UI Template for the AI Medical Chatbot
+===============================================================================
+
+Description
+-----------
+This HTML template renders the front-end interface for the AI Medical Chatbot.
+It displays the message history, an input form for user prompts, and a header
+banner with online status. It also handles user-facing warnings, error messages,
+and the chat layout.
+
+Features
+--------
+- Renders message list stored in Flask session.
+- Displays error banners for application-level issues.
+- Two-pane layout:
+    * Chat display section
+    * User input section
+- Auto-scrolls chat to bottom on page load.
+- Includes disclaimers for medical AI usage.
+- Uses external CSS via Flask’s `url_for`.
+- Clean, accessible markup with labels, roles, semantic headings.
+
+Template Variables
+------------------
+messages : list of dict
+    Chat messages, each containing:
+    - role : "user" | "assistant"
+    - content : string (HTML-safe)
+error : str or None
+    Error message text to be displayed in a warning box (if present).
+
+Notes
+-----
+- Jinja filters (e.g., `nl2br`) are applied in the template for formatting.
+- Layout relies on `static/style.css` for visual presentation.
+===============================================================================
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Set correct character encoding for all browsers -->
+    <meta charset="UTF-8" />
+
+    <!-- Page title shown in browser tab -->
+    <title>🔍 AI Medical Chatbot</title>
+
+    <!-- Load external stylesheet from Flask static folder -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <!-- Wrapper controlling page layout and centering -->
+    <div class="app-wrapper">
+
+        <!-- Primary card UI for the chatbot -->
+        <div class="app-card">
+
+            <!-- ===================================================== -->
+            <!-- Header: Title, subtitle, and online status indicator -->
+            <!-- ===================================================== -->
+            <header class="app-header">
+                <div class="app-title-block">
+
+                    <!-- Chatbot title -->
+                    <h1>🔍 AI Medical Chatbot</h1>
+
+                    <!-- Subtitle explaining purpose with a smaller disclaimer -->
+                    <p class="app-subtitle">
+                        Ask medical questions in plain language.
+                        <span class="app-subtitle-small">
+                            Responses are AI-generated and do not replace professional medical advice.
+                        </span>
+                    </p>
+                </div>
+
+                <!-- Status indicator showing the server is responding -->
+                <div class="header-status">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Online</span>
+                </div>
+            </header>
+
+            <!-- ===================================================== -->
+            <!-- Error banner (only visible if backend passes an error) -->
+            <!-- ===================================================== -->
+            {% if error %}
+                <div class="alert alert-error">
+                    {{ error }}
+                </div>
+            {% endif %}
+
+            <!-- ===================================================== -->
+            <!-- Main chat layout: left = messages, right = input area -->
+            <!-- ===================================================== -->
+            <main class="chat-layout">
+
+                <!-- =============================== -->
+                <!-- Chat message display section     -->
+                <!-- =============================== -->
+                <section class="chat-box" id="chat-box">
+
+                    <!-- If messages exist in session, render them -->
+                    {% if messages %}
+                        <div class="message-list">
+
+                            <!-- Loop through each stored message -->
+                            {% for msg in messages %}
+                                <div class="message-block">
+
+                                    <!-- Role label (USER / ASSISTANT) -->
+                                    <div class="message-label {{ msg.role }}">
+                                        {{ msg.role|upper }}
+                                    </div>
+
+                                    <!-- Message text, newline-safe via nl2br -->
+                                    <div class="message-text">
+                                        {{ msg.content | safe | nl2br }}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                    {% else %}
+                        <!-- ============================= -->
+                        <!-- Empty-state prompt for users  -->
+                        <!-- ============================= -->
+                        <div class="empty-state">
+                            <h2>Start a conversation</h2>
+
+                            <p>Describe your symptoms, medications, or concerns in as much detail as you like.</p>
+
+                            <ul>
+                                <li>“I’ve had a headache for three days, what could be going on?”</li>
+                                <li>“How do side effects of drug A compare to drug B?”</li>
+                                <li>“Can you explain my lab results in simple terms?”</li>
+                            </ul>
+                        </div>
+                    {% endif %}
+                </section>
+
+                <!-- =============================== -->
+                <!-- Input panel for user questions  -->
+                <!-- =============================== -->
+                <section class="input-panel">
+
+                    <!-- Form that sends user input to the Flask POST route -->
+                    <form method="post" action="{{ url_for('index') }}" class="prompt-form">
+
+                        <!-- Screen-reader-only label -->
+                        <label for="prompt" class="sr-only">Ask a medical question</label>
+
+                        <!-- Multiline input box for user prompts -->
+                        <textarea
+                            id="prompt"
+                            name="prompt"
+                            placeholder="Ask a medical question..."
+                            required
+                        ></textarea>
+
+                        <!-- Buttons below the textbox -->
+                        <div class="input-actions">
+                            <button type="submit" class="btn primary">Send</button>
+                        </div>
+                    </form>
+
+                    <!-- Button that triggers GET /clear (resets chat history) -->
+                    <form method="get" action="{{ url_for('clear') }}" class="clear-form">
+                        <button type="submit" class="btn secondary">Clear chat</button>
+                    </form>
+
+                </section>
+            </main>
+
+            <!-- ===================================================== -->
+            <!-- Footer with safety warning for medical AI usage        -->
+            <!-- ===================================================== -->
+            <footer class="app-footer">
+                <p class="disclaimer">
+                    ⚠️ This chatbot is for informational purposes only and is not a substitute for
+                    professional medical advice, diagnosis, or treatment. Always consult a qualified
+                    healthcare professional with any questions you may have regarding a medical condition.
+                </p>
+            </footer>
+
+        </div>
+    </div>
+
+    <!-- ===================================================== -->
+    <!-- Auto-scroll behaviour: keeps the chat at the bottom   -->
+    <!-- ===================================================== -->
+    <script>
+        const chatBox = document.getElementById("chat-box");
+        if (chatBox) {
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    </script>
+
+</body>
+</html>

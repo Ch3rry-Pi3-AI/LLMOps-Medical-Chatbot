@@ -37,7 +37,7 @@ logger = get_logger(__name__)
 # Load Groq LLM
 # =============================
 def load_llm(
-    model_name: str = "llama-3.1-8b-instant",
+    model_name: str = "llama-3.3-70b-versatile",
     groq_api_key: str = GROQ_API_KEY
 ) -> Optional[ChatGroq]:
     """
