@@ -1,7 +1,9 @@
-# 🧩 **LLM Loader Component — LLMOps Medical Chatbot**
+# 🔍 **RAG Retriever Component — LLMOps Medical Chatbot**
 
-This branch introduces the **LLM loader component** for the LLMOps Medical Chatbot.
-It adds the ability to initialise a Groq-hosted LLM using the `ChatGroq` interface, enabling fast, low-latency inference for medical question-answering using models such as **LLaMA 3.1**.
+This branch introduces the **retriever component** for the LLMOps Medical Chatbot.
+It implements the complete Retrieval-Augmented Generation (RAG) chain using the **LangChain v1 Expression Language (LCEL)**, replacing all deprecated `langchain.chains` APIs with modern runnable-based composition.
+
+The RAG chain ties together the FAISS vector store retriever, the Groq-hosted LLM, and a custom medical safety-focused prompt to produce concise, context-grounded medical answers.
 
 ## 🗂️ **Project Structure (Updated)**
 
@@ -39,51 +41,68 @@ LLMOPS-MEDICAL-CHATBOT/
     │   ├── embeddings.py
     │   ├── vector_store.py
     │   ├── data_loader.py
-    │   └── llm.py                # NEW: Loads Groq-hosted LLMs for inference
+    │   ├── llm.py
+    │   └── retriever.py            # NEW: Builds the LCEL RAG retrieval + LLM pipeline
     │
     └── templates/
 ```
 
-> 💡 The `.env` file must remain private, as it contains the `GROQ_API_KEY` used to authenticate with Groq's LLM API.
+> 💡 The `.env` file must remain private, as it contains the `GROQ_API_KEY` used to authenticate with Groq’s LLM API.
 
 ## ⚙️ **What Was Done in This Branch**
 
-1. **Added the `llm.py` component**
+1. **Added the `retriever.py` component**
 
-   * Implemented `load_llm()` to initialise a Groq-backed LLM via the LangChain v1 `ChatGroq` wrapper.
-   * Configured sensible defaults (`llama-3.1-8b-instant`, `temperature=0.3`, `max_tokens=256`).
-   * Integrated logging for full visibility into model loading steps.
-   * Added robust exception handling using `CustomException`.
+   * Implemented a fully LangChain v1-compliant RAG pipeline.
+   * Replaced all deprecated `langchain.chains` functionality with:
 
-2. **Aligned all imports with the LangChain v1 ecosystem**
+     * `RunnablePassthrough`
+     * LCEL dictionary routing
+     * `ChatPromptTemplate`
+     * `StrOutputParser`
+   * Constructed a clean LCEL pipeline:
 
-   * Adopted the `langchain_groq` package for Groq model loading.
-   * Ensured compatibility with the project's existing LangChain v1 components.
+     ```
+     {
+         "context": retriever,
+         "question": RunnablePassthrough(),
+     }
+     | prompt
+     | llm
+     | StrOutputParser()
+     ```
 
-3. **Applied full project-wide formatting**
+2. **Created a custom medical prompt**
+
+   * Ensures context-grounding only.
+   * Limits answers to 2–3 lines.
+   * Instructs the model not to hallucinate.
+
+3. **Integrated all core components**
+
+   * Loads FAISS vector store via `vector_store.py`
+   * Loads Groq LLM via `llm.py`
+   * Produces a reusable, callable RAG chain for downstream inference.
+
+4. **Applied full project-standard formatting**
 
    * File-level documentation
-   * NumPy-style docstrings
+   * NumPy-style function docstrings
    * Type hints
    * Section comment blocks
-   * Clear explanatory inline comments
+   * Clear, intuitive inline comments
 
-4. **Integrated seamlessly with the pipeline**
+## 🧪 **RAG Chain Status**
 
-   * The loaded LLM will be used in the next stage: constructing a retrieval-augmented query answering module.
+The LCEL RAG chain builds successfully and returns a runnable that accepts a user question and outputs a final, parsed medical answer.
 
-## 🧪 **LLM Loader Status**
-
-This component is now fully implemented and ready for use during the query-answering stage of the chatbot.
-Model loading is logged clearly and includes error tracing through the custom exception system.
-
-No runtime output is included here because the `llm.py` component does not execute a pipeline—its behaviour depends on downstream usage.
+All deprecated `langchain.chains` imports have been fully removed.
 
 ## ✅ **Summary**
 
-This branch introduces the Medical Chatbot’s inference layer:
+This branch completes the Medical Chatbot’s retrieval-and-reasoning layer:
 
-* Groq-hosted LLM loading via LangChain v1
-* Clean, modular component ready for integration
-* Robust logging and exception management
-* Completes the core components needed before building the retrieval + LLM answer generation pipeline
+* Full LangChain v1 LCEL RAG chain
+* Safe, concise, context-only medical prompt
+* Integration of retriever + LLM into a unified runnable
+* Foundation for the final UI or API-based chatbot interface
