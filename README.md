@@ -1,7 +1,7 @@
-# 🧩 **Vector Store Pipeline — LLMOps Medical Chatbot**
+# 🧩 **LLM Loader Component — LLMOps Medical Chatbot**
 
-This branch introduces the **full vector store pipeline** for the LLMOps Medical Chatbot.
-It connects all previously implemented components—PDF loading, text chunking, embeddings, and vector store creation—into a complete end-to-end process for building the FAISS vector index used during medical question-answering.
+This branch introduces the **LLM loader component** for the LLMOps Medical Chatbot.
+It adds the ability to initialise a Groq-hosted LLM using the `ChatGroq` interface, enabling fast, low-latency inference for medical question-answering using models such as **LLaMA 3.1**.
 
 ## 🗂️ **Project Structure (Updated)**
 
@@ -38,75 +38,52 @@ LLMOPS-MEDICAL-CHATBOT/
     │   ├── pdf_loader.py
     │   ├── embeddings.py
     │   ├── vector_store.py
-    │   └── data_loader.py                    # NEW: End-to-end vector store generation workflow
+    │   ├── data_loader.py
+    │   └── llm.py                # NEW: Loads Groq-hosted LLMs for inference
     │
     └── templates/
 ```
 
-> 💡 The `.env` file must remain private, as it contains sensitive API keys required for model access.
+> 💡 The `.env` file must remain private, as it contains the `GROQ_API_KEY` used to authenticate with Groq's LLM API.
 
 ## ⚙️ **What Was Done in This Branch**
 
-1. **Added the `data_loader.py` component**
+1. **Added the `llm.py` component**
 
-   * Introduced a unified function `process_and_store_pdfs()` that orchestrates:
+   * Implemented `load_llm()` to initialise a Groq-backed LLM via the LangChain v1 `ChatGroq` wrapper.
+   * Configured sensible defaults (`llama-3.1-8b-instant`, `temperature=0.3`, `max_tokens=256`).
+   * Integrated logging for full visibility into model loading steps.
+   * Added robust exception handling using `CustomException`.
 
-     * PDF loading
-     * Text chunking
-     * Embedding model initialisation
-     * FAISS vector store creation and saving
-   * Added logging at every stage for full transparency and easier debugging.
+2. **Aligned all imports with the LangChain v1 ecosystem**
 
-2. **Ensured full compatibility with the LangChain v1 ecosystem**
+   * Adopted the `langchain_groq` package for Groq model loading.
+   * Ensured compatibility with the project's existing LangChain v1 components.
 
-   * Uses `langchain_community.vectorstores.FAISS`
-   * Uses `langchain_huggingface` for embeddings
-   * Uses `langchain_text_splitters` and `langchain_core.documents`
-
-3. **Implemented consistent project-wide formatting**
+3. **Applied full project-wide formatting**
 
    * File-level documentation
-   * NumPy-style function docstrings
+   * NumPy-style docstrings
    * Type hints
    * Section comment blocks
-   * Intuitive inline comments
+   * Clear explanatory inline comments
 
-4. **Integrated with existing components**
+4. **Integrated seamlessly with the pipeline**
 
-   * Reuses `pdf_loader.py`, `embeddings.py`, and `vector_store.py` cleanly.
-   * Pipeline is modular and can be triggered from CLI or scripts.
+   * The loaded LLM will be used in the next stage: constructing a retrieval-augmented query answering module.
 
-## 🧪 **Pipeline Execution Output**
+## 🧪 **LLM Loader Status**
 
-Running:
+This component is now fully implemented and ready for use during the query-answering stage of the chatbot.
+Model loading is logged clearly and includes error tracing through the custom exception system.
 
-```
-python app/components/data_loader.py
-```
-
-Produced the following log output:
-
-```
-2025-11-19 11:18:42,416 - INFO - Starting vector store creation pipeline
-2025-11-19 11:18:42,416 - INFO - Loading PDF files from: data/
-2025-11-19 11:19:00,799 - INFO - Successfully loaded 759 PDF documents.
-2025-11-19 11:19:00,799 - INFO - Splitting 759 documents into text chunks
-2025-11-19 11:19:01,028 - INFO - Generated 7080 text chunks from input documents
-2025-11-19 11:19:01,030 - INFO - Generating a new FAISS vector store from text chunks
-2025-11-19 11:19:01,030 - INFO - Initialising HuggingFace embedding model
-2025-11-19 11:19:03,324 - INFO - HuggingFace embedding model loaded successfully
-2025-11-19 11:21:14,924 - INFO - Saving FAISS vector store to disk
-2025-11-19 11:21:14,987 - INFO - FAISS vector store saved successfully.
-2025-11-19 11:21:14,992 - INFO - Vector store created successfully
-```
+No runtime output is included here because the `llm.py` component does not execute a pipeline—its behaviour depends on downstream usage.
 
 ## ✅ **Summary**
 
-This branch completes the ingestion and vectorisation stage of the Medical Chatbot:
+This branch introduces the Medical Chatbot’s inference layer:
 
-* Fully automated pipeline for building the FAISS vector store
-* Modular integration of all previously implemented components
-* Clear logging and robust exception handling
-* 759 documents processed → 7080 chunks embedded → FAISS index created successfully
-
-With the vector store now complete, the next stage will focus on **query retrieval and LLM-based medical question answering**.
+* Groq-hosted LLM loading via LangChain v1
+* Clean, modular component ready for integration
+* Robust logging and exception management
+* Completes the core components needed before building the retrieval + LLM answer generation pipeline
