@@ -1,7 +1,7 @@
-# 🧩 **PDF Loader Component — LLMOps Medical Chatbot**
+# 🧩 **Embedding Model Component — LLMOps Medical Chatbot**
 
-This branch introduces the **PDF ingestion component** for the LLMOps Medical Chatbot.
-It adds functionality for loading medical PDF files and converting them into text chunks for downstream retrieval and LLM reasoning.
+This branch introduces the **embedding model component** for the LLMOps Medical Chatbot.
+It adds support for generating text embeddings using a HuggingFace sentence-transformer model, which is required for building the vector store and enabling semantic search during medical question-answering.
 
 ## 🗂️ **Project Structure (Updated)**
 
@@ -35,38 +35,43 @@ LLMOPS-MEDICAL-CHATBOT/
     │
     ├── components/
     │   ├── __init__.py
-    │   └── pdf_loader.py                # NEW: Loads PDFs and creates text chunks
+    │   ├── pdf_loader.py
+    │   └── embeddings.py                # NEW: Initialises the HuggingFace embedding model
     │
     └── templates/
 ```
 
-> 💡 The `.env` file holds sensitive API keys and should never be committed to version control.
+> 💡 The `.env` file must remain private, as it contains sensitive API keys required for model access.
 
 ## ⚙️ **What Was Done in This Branch**
 
-1. **Introduced the `pdf_loader.py` component**
+1. **Added the `embeddings.py` component**
 
-   * Implemented functionality to load PDFs from the `data/` directory.
-   * Added text-chunking using LangChain v1’s `RecursiveCharacterTextSplitter`.
-   * Integrated logging and custom exception handling for robust ingestion.
+   * Implemented `get_embedding_model()` to load a HuggingFace transformer for embedding text chunks.
+   * Integrated the component with the project’s logging and custom exception system.
+   * Ensured the implementation follows the project’s formatting conventions:
 
-2. **Aligned imports with LangChain v1 ecosystem**
+     * File-level docstring
+     * NumPy-style function docstrings
+     * Type hints
+     * Section comment blocks
+     * Clear inline comments
 
-   * Updated all loaders, splitters, and document classes to their correct v1 locations.
-   * Ensured compatibility with `langchain-community`, `langchain-text-splitters`, and `langchain-core`.
+2. **Updated imports to LangChain v1 standards**
 
-3. **Structured the file in the project style**
+   * Adopted `langchain-huggingface` for the embedding wrapper.
+   * Ensured compatibility with the current LangChain v1 ecosystem.
 
-   * Included file-level documentation.
-   * Added NumPy-style function docstrings.
-   * Added type hints and intuitive inline comments.
-   * Used section comment blocks for readability.
+3. **Prepared the embedding layer for downstream retrieval**
+
+   * Output model instance is ready for use in vector store generation.
+   * Forms the second major functional piece of the chatbot pipeline.
 
 ## ✅ **Summary**
 
-This branch adds the first major functional component to the Medical Chatbot:
+This branch adds the Medical Chatbot’s embedding layer:
 
-* PDF ingestion using modern LangChain v1 modules
-* Robust logging and exception handling
-* Clean, modular placement inside `app/components/`
-* Fully prepared data chunks for future embedding and retrieval steps
+* HuggingFace embedding model initialisation
+* Fully structured error handling and logging
+* Modern, v1-compatible LangChain imports
+* Seamless integration with the existing components folder
