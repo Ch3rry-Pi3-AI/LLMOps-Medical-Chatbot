@@ -8,4 +8,6 @@ At present, this directory includes:
 
 Responsible for loading medical PDF files from the `data/` directory and splitting them into text chunks for downstream processing.
 
-This folder serves as the central place for application components as they are implemented.
+### **embeddings.py**
+
+Responsible for initialising the HuggingFace embedding model used to convert text chunks into vector representations for retrieval.
