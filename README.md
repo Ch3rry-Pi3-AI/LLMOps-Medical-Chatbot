@@ -1,9 +1,13 @@
-# 🔍 **RAG Retriever Component — LLMOps Medical Chatbot**
+# 🖥️ **Flask Application Layer — LLMOps Medical Chatbot**
 
-This branch introduces the **retriever component** for the LLMOps Medical Chatbot.
-It implements the complete Retrieval-Augmented Generation (RAG) chain using the **LangChain v1 Expression Language (LCEL)**, replacing all deprecated `langchain.chains` APIs with modern runnable-based composition.
+This branch introduces the **complete Flask web application layer** for the LLMOps Medical Chatbot.
+It transforms the backend RAG pipeline into a fully interactive browser-based chat interface with a clean layout, user-friendly controls, and full integration with the retrieval system.
 
-The RAG chain ties together the FAISS vector store retriever, the Groq-hosted LLM, and a custom medical safety-focused prompt to produce concise, context-grounded medical answers.
+<p align="center">
+  <img src="img/flask/flask_app.gif" alt="Flask Chatbot Demo" width="100%">
+</p>
+
+This is the branch where the project becomes a functional medical chatbot that users can interact with directly through the web.
 
 ## 🗂️ **Project Structure (Updated)**
 
@@ -22,87 +26,114 @@ LLMOPS-MEDICAL-CHATBOT/
 │   └── The_GALE_ENCYCLOPEDIA_OF_MEDICINE_SECOND.pdf
 │
 └── app/
-    ├── __init__.py
+    ├── application.py            # NEW: Flask routes, session logic, RAG invocation
     │
     ├── common/
-    │   ├── __init__.py
     │   ├── custom_exception.py
-    │   ├── logger.py
-    │   └── README.md
+    │   └── logger.py
     │
     ├── config/
-    │   ├── __init__.py
-    │   ├── config.py
-    │   └── README.md
+    │   └── config.py
     │
     ├── components/
-    │   ├── __init__.py
     │   ├── pdf_loader.py
     │   ├── embeddings.py
     │   ├── vector_store.py
     │   ├── data_loader.py
     │   ├── llm.py
-    │   └── retriever.py            # NEW: Builds the LCEL RAG retrieval + LLM pipeline
+    │   └── retriever.py
     │
-    └── templates/
+    ├── templates/
+    │   └── index.html            # NEW: Jinja HTML template for chat UI
+    │
+    └── static/
+        └── style.css             # NEW: Full UI stylesheet
 ```
 
-> 💡 The `.env` file must remain private, as it contains the `GROQ_API_KEY` used to authenticate with Groq’s LLM API.
+## ⚙️ **What Was Implemented in This Branch**
 
-## ⚙️ **What Was Done in This Branch**
+### 🧠 1. `application.py` — Complete Flask Controller
 
-1. **Added the `retriever.py` component**
+This module now handles:
 
-   * Implemented a fully LangChain v1-compliant RAG pipeline.
-   * Replaced all deprecated `langchain.chains` functionality with:
+* Flask app creation
+* Session-based message history
+* The `nl2br` Jinja filter
+* Direct invocation of the RAG retrieval chain
+* Error handling and user-facing notifications
+* Clean message sanitisation
+* GET + POST handling for full chat interaction
+* Clear chat functionality
 
-     * `RunnablePassthrough`
-     * LCEL dictionary routing
-     * `ChatPromptTemplate`
-     * `StrOutputParser`
-   * Constructed a clean LCEL pipeline:
+All functions follow your documentation standards:
 
-     ```
-     {
-         "context": retriever,
-         "question": RunnablePassthrough(),
-     }
-     | prompt
-     | llm
-     | StrOutputParser()
-     ```
+* NumPy-style docstrings
+* Type hints
+* Section-level comment blocks
+* Intuitive inline explanations
 
-2. **Created a custom medical prompt**
+### 🖥️ 2. `index.html` — Full Chat Interface Template
 
-   * Ensures context-grounding only.
-   * Limits answers to 2–3 lines.
-   * Instructs the model not to hallucinate.
+The new HTML template includes:
 
-3. **Integrated all core components**
+* Title, subtitle, and online status indicator
+* Structured display of user and assistant messages
+* Error banners when backend issues occur
+* Empty-state instructional messages
+* Textarea input with Send and Clear buttons
+* Medical disclaimer footer
+* Auto-scroll JavaScript for usability
 
-   * Loads FAISS vector store via `vector_store.py`
-   * Loads Groq LLM via `llm.py`
-   * Produces a reusable, callable RAG chain for downstream inference.
+The template is fully documented with clear, readable comments.
 
-4. **Applied full project-standard formatting**
+### 🎨 3. `style.css` — Complete UI Styling
 
-   * File-level documentation
-   * NumPy-style function docstrings
-   * Type hints
-   * Section comment blocks
-   * Clear, intuitive inline comments
+The stylesheet defines the entire look and feel of the chatbot:
 
-## 🧪 **RAG Chain Status**
+* Centre-aligned card layout
+* Gradient header design
+* Scrollable chat panel with custom scrollbar
+* User and assistant message blocks
+* Button styling and hover transitions
+* Empty-state styling
+* Footer with legal disclaimers
+* Accessibility helpers (e.g., `.sr-only`)
 
-The LCEL RAG chain builds successfully and returns a runnable that accepts a user question and outputs a final, parsed medical answer.
+It includes a full NumPy-style documentation block and consistent inline comments above each section.
 
-All deprecated `langchain.chains` imports have been fully removed.
+### 🔗 4. Integration With RAG Retrieval Pipeline
+
+This branch successfully attaches the Flask UI to the underlying LCEL RAG chain.
+When users submit a medical question:
+
+* The RAG retriever fetches context
+* The LLM generates a grounded answer
+* The assistant response appears instantly in the chat UI
+
+This brings the entire system together into a cohesive user experience.
+
+## 🧪 **Application Status**
+
+The chatbot now:
+
+* Loads correctly in the browser
+* Displays messages cleanly
+* Accepts user input
+* Generates responses via the RAG chain
+* Handles and displays errors gracefully
+* Scrolls chat to the most recent message
+* Allows the user to clear the conversation at any time
+
+It is fully functional for local usage.
 
 ## ✅ **Summary**
 
-This branch completes the Medical Chatbot’s retrieval-and-reasoning layer:
+This branch delivers the **complete front-end application** of the LLMOps Medical Chatbot:
 
-* Full LangChain v1 LCEL RAG chain
-* Safe, concise, context-only medical prompt
-* Integration of retriever + LLM into a unified runnable
-* Foundation for the final UI or API-based chatbot interface
+* Flask backend with well-structured routes
+* Fully documented HTML template
+* Fully documented CSS stylesheet
+* Interactive chat UI
+* Working integration with the retrieval-augmented medical answer engine
+
+The project now operates as a full web-based medical chatbot.
