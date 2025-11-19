@@ -1,4 +1,4 @@
-# 🧩 **Vector Store Component — LLMOps Medical Chatbot**
+# 🗂️ **Vector Store Component — LLMOps Medical Chatbot**
 
 This branch introduces the **vector store component** for the LLMOps Medical Chatbot.
 It enables the creation, saving, and loading of a FAISS vector store built from embedded medical text chunks, forming the foundation of the chatbot’s retrieval system.
