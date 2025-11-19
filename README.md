@@ -1,4 +1,4 @@
-# 🧩 **PDF Loader Component — LLMOps Medical Chatbot**
+# 📄 **PDF Loader Component — LLMOps Medical Chatbot**
 
 This branch introduces the **PDF ingestion component** for the LLMOps Medical Chatbot.
 It adds functionality for loading medical PDF files and converting them into text chunks for downstream retrieval and LLM reasoning.
