@@ -4,4 +4,16 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "faiss-cpu>=1.13.0",
+    "flask>=3.1.2",
+    "huggingface-hub>=0.36.0",
+    "langchain>=1.0.7",
+    "langchain-community>=0.4.1",
+    "langchain-core>=1.0.5",
+    "langchain-groq>=1.0.1",
+    "langchain-huggingface>=1.0.1",
+    "pypdf>=6.3.0",
+    "python-dotenv>=1.2.1",
+    "sentence-transformers>=5.1.2",
+]
