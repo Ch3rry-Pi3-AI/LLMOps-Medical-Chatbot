@@ -19,3 +19,7 @@ Responsible for loading an existing FAISS vector store from disk or creating and
 ### **data_loader.py**
 
 Responsible for orchestrating the full PDF → chunking → vector store creation workflow by combining the loader, chunker, and vector store components.
+
+### **llm.py**
+
+Responsible for loading a Groq-hosted LLM using the `ChatGroq` interface for downstream inference and medical question-answering.
