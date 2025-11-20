@@ -1,67 +1,41 @@
-/* =============================================================================
-   Jenkins Declarative Pipeline — Clone GitHub Repository Stage
-
-   Description
-   -----------
-   This Jenkins pipeline performs a single automated stage: cloning the
-   project's GitHub repository into the Jenkins workspace. It uses the
-   built-in Jenkins Git plugin and authenticates via a stored credential.
-
-   The pipeline uses the following components:
-
-   - agent any
-       Runs the pipeline on any available Jenkins agent.
-
-   - checkout scmGit(...)
-       Performs a Git checkout using the specified branch, repository URL,
-       and Jenkins credential ID.
-
-   - credentialsId: 'github-token'
-       Securely retrieves the stored GitHub Personal Access Token (PAT).
-
-   Purpose
-   -------
-   This pipeline stage ensures that Jenkins always checks out the most
-   up-to-date version of the repository’s `main` branch, ready for
-   subsequent build, test, or deployment stages.
-
-   Notes
-   -----
-   - Ensure the Jenkins credential ID `github-token` exists in:
-       Jenkins → Manage Jenkins → Credentials.
-   - The repository URL must be HTTPS to use token-based authentication.
-   - This pipeline can be expanded with additional stages (build, test,
-     docker build, deployment, etc.).
-   =============================================================================
-*/
-
 pipeline {
-
-    /* Use any available Jenkins agent */
     agent any
 
-    stages {
+    environment {
+        AWS_REGION = 'eu-west-2'
+        ECR_REPO = 'my-repo'
+        IMAGE_TAG = 'latest'
+        SERVICE_NAME = 'llmops-medical-service'
+    }
 
-        /* ---------------------------------------------------------
-           Stage: Clone GitHub Repo
-           Fetches the repository into the Jenkins workspace.
-           --------------------------------------------------------- */
+    stages {
         stage('Clone GitHub Repo') {
             steps {
                 script {
-
-                    // Display progress information in Jenkins logs
                     echo 'Cloning GitHub repo to Jenkins...'
+                    checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[credentialsId: 'github-token', url: 'https://github.com/data-guru0/RAG-MEDICAL-CHATBOT.git']])
+                }
+            }
+        }
 
-                    // Perform checkout using the Git plugin and PAT credentials
-                    checkout scmGit(
-                        branches: [[name: '*/main']],             // Target branch
-                        extensions: [],                           // No special behaviours
-                        userRemoteConfigs: [[
-                            credentialsId: 'github-token',        // PAT stored in Jenkins
-                            url: 'https://github.com/Ch3rry-Pi3-AI/LLMOps-Medical-Chatbot.git'
-                        ]]
-                    )
+        stage('Build, Scan, and Push Docker Image to ECR') {
+            steps {
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-token']]) {
+                    script {
+                        def accountId = sh(script: "aws sts get-caller-identity --query Account --output text", returnStdout: true).trim()
+                        def ecrUrl = "${accountId}.dkr.ecr.${env.AWS_REGION}.amazonaws.com/${env.ECR_REPO}"
+                        def imageFullTag = "${ecrUrl}:${IMAGE_TAG}"
+
+                        sh """
+                        aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ecrUrl}
+                        docker build -t ${env.ECR_REPO}:${IMAGE_TAG} .
+                        trivy image --severity HIGH,CRITICAL --format json -o trivy-report.json ${env.ECR_REPO}:${IMAGE_TAG} || true
+                        docker tag ${env.ECR_REPO}:${IMAGE_TAG} ${imageFullTag}
+                        docker push ${imageFullTag}
+                        """
+
+                        archiveArtifacts artifacts: 'trivy-report.json', allowEmptyArchive: true
+                    }
                 }
             }
         }
