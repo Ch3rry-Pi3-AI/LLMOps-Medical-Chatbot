@@ -1,112 +1,136 @@
-# 🐳 **Dockerisation Layer — LLMOps Medical Chatbot**
+# 🧰 **Jenkins Deployment Setup — LLMOps Medical Chatbot**
 
-This branch introduces **Docker containerisation** for the LLMOps Medical Chatbot.
-It packages the entire Flask application, RAG pipeline, and supporting modules into a lightweight Python 3.12 container, enabling consistent deployment across all environments including local development, servers, and Kubernetes.
+This branch introduces the **custom Jenkins environment** required to build, test, and deploy the Medical Chatbot through a fully containerised CI/CD pipeline.
+A Docker-enabled Jenkins controller image is created, allowing pipelines to build Docker images directly inside Jenkins using Docker-in-Docker (DinD) behaviour.
 
-By completing this step, the chatbot is now fully portable and can run anywhere Docker is supported.
+This step prepares the project for automated deployment workflows.
 
 ## 🗂️ **Project Structure (Updated)**
 
 ```text
 LLMOPS-MEDICAL-CHATBOT/
-├── Dockerfile                 # NEW: Fully documented Python 3.12 Dockerfile
-├── .venv/
-├── .env
-├── .gitignore
-├── requirements.txt
-├── pyproject.toml
-├── setup.py
+├── custom_jenkins/
+│   └── Dockerfile        # NEW: Docker-enabled Jenkins controller image
+│
+├── app/
+│   └── ...               # Flask UI + RAG pipeline
+│
 ├── data/
-│   └── The_GALE_ENCYCLOPEDIA_OF_MEDICINE_SECOND.pdf
-└── app/
-    ├── application.py
-    │
-    ├── common/
-    │   ├── custom_exception.py
-    │   └── logger.py
-    │
-    ├── config/
-    │   └── config.py
-    │
-    ├── components/
-    │   ├── pdf_loader.py
-    │   ├── embeddings.py
-    │   ├── vector_store.py
-    │   ├── data_loader.py
-    │   ├── llm.py
-    │   └── retriever.py
-    │
-    ├── templates/
-    │   └── index.html
-    │
-    └── static/
-        └── style.css
+│   └── ...
+│
+├── Dockerfile            # App container
+└── ...
 ```
 
 ## ⚙️ **What Was Implemented in This Branch**
 
-### 🐍 1. Switched Base Image to `python:3.12-slim`
+### 🐳 1. Created the `custom_jenkins` Directory
 
-The project now uses a lightweight, secure Python 3.12 environment.
-The base image was updated from 3.10 to 3.12 to match your current local environment and to ensure long-term support.
+A new directory was added to the project containing a fully documented Dockerfile that constructs a **Jenkins controller image with Docker Engine installed**.
+This allows Jenkins to:
 
-### ⚡ 2. Added Full Dockerfile With Documentation
+* Build Docker images
+* Run containers during pipelines
+* Push images to container registries
+* Interface with Docker from inside its own container
 
-A fully documented production-ready Dockerfile was created featuring:
+### 🛠️ 2. Built the Custom Jenkins Image
 
-* Python 3.12-slim parent image
-* Disabled `.pyc` bytecode generation
-* Unbuffered Python output for clean logs
-* Build tools installation (`build-essential`, `curl`)
-* Project copied into `/app`
-* `pip install -e .` for editable installs
-* Port 5000 exposed for Flask
-* Launch command:
+From inside the `custom_jenkins` folder, the custom Jenkins DinD image is built using:
 
-  ```
-  CMD ["python", "app/application.py"]
-  ```
-
-All instructions follow best practices and include concise inline comments and a NumPy-style header documentation block.
-
-### 📦 3. Project Prepared for Containerised Execution
-
-The entire application can now run inside Docker with a single command:
-
-```
-docker build -t medical-chatbot .
-docker run -p 5000:5000 medical-chatbot
+```bash
+docker build -t jenkins-dind .
 ```
 
-This ensures:
+This produces a reproducible Jenkins environment suitable for CI/CD.
 
-* Identical environments across development and deployment
-* Isolation from system Python configurations
-* Easy compatibility with CI/CD pipelines and platforms like Kubernetes
+### 🚦 3. Launched the Jenkins Container
 
-### 🧹 4. Clean Build Context and Stable Layering
+A runnable Jenkins instance is created with:
 
-The Dockerfile minimises image layers, cleans up APT cache, and avoids storing pip cache to keep the container small and efficient.
+```bash
+docker run -d \
+  --name jenkins-dind \
+  --privileged \
+  -p 8080:8080 \
+  -p 50000:50000 \
+  -v //var/run/docker.sock:/var/run/docker.sock \
+  -v jenkins_home:/var/jenkins_home \
+  jenkins-dind
+```
 
-## 🧪 **Dockerisation Status**
+This container:
 
-The container builds correctly and runs the chatbot with full UI functionality:
+* Runs in privileged mode
+* Mounts the host Docker socket
+* Uses a persistent Jenkins home volume
+* Exposes the standard Jenkins ports
 
-* Flask app starts up normally
-* RAG chain loads as expected
-* Message history works
-* Web UI is served on port 5000
-* No bytecode or pip cache clutter in the image
+### 📄 4. Retrieved Initial Jenkins Password
 
-The image is stable and suitable for use in later deployment branches.
+After running the container, logs and admin credentials are retrieved with:
+
+```bash
+docker logs jenkins-dind
+```
+
+or:
+
+```bash
+docker exec jenkins-dind cat /var/jenkins_home/secrets/initialAdminPassword
+```
+
+This password is required for the first login.
+
+### 🖥️ 5. Accessed Jenkins Dashboard
+
+The Jenkins UI is now available at:
+
+```
+http://localhost:8080
+```
+
+The welcome wizard loads and prompts for plugin installation.
+
+### 🐍 6. Installed Python Inside the Jenkins Container
+
+Since pipelines will run Python code, Python 3 and pip were installed directly into the Jenkins container:
+
+```bash
+docker exec -u root -it jenkins-dind bash
+apt update -y
+apt install -y python3 python3-pip
+ln -s /usr/bin/python3 /usr/bin/python
+exit
+```
+
+This ensures that Python-based stages (tests, linting, packaging, ML steps) can run inside Jenkins.
+
+### 🔄 7. Restarted Jenkins to Apply Changes
+
+```bash
+docker restart jenkins-dind
+```
+
+After restarting, Jenkins is ready with full Python + Docker support.
+
+### 🔐 8. Signed in Again and Completed Setup
+
+Final login at:
+
+```
+http://localhost:8080
+```
+
+You can now create pipelines, connect GitHub, and begin setting up automated deployment.
 
 ## ✅ **Summary**
 
-This branch introduces complete Docker support for the LLMOps Medical Chatbot:
+This branch delivers the full Jenkins CI/CD foundation:
 
-* Fully documented Python 3.12 Dockerfile
-* Portable, reproducible execution environment
-* Works seamlessly with Flask, LangChain, embeddings, and vector store
-* Prepares the project for CI/CD and deployment pipelines
+* Custom Jenkins controller image with Docker installed
+* Containerised Jenkins instance with persistent storage
+* Python environment added inside Jenkins
+* Ready for Docker-based build and deployment pipelines
 
-The chatbot can now be run anywhere — locally, in the cloud, or inside Kubernetes — using a single container.
+The project is now set up for the next stage: **configuring Jenkins pipelines**, integrating GitHub, and later deploying to Kubernetes or cloud environments.
