@@ -1,136 +1,121 @@
-# 🧰 **Jenkins Deployment Setup — LLMOps Medical Chatbot**
+# 🔗 **Jenkins–GitHub Integration — LLMOps Medical Chatbot**
 
-This branch introduces the **custom Jenkins environment** required to build, test, and deploy the Medical Chatbot through a fully containerised CI/CD pipeline.
-A Docker-enabled Jenkins controller image is created, allowing pipelines to build Docker images directly inside Jenkins using Docker-in-Docker (DinD) behaviour.
+This branch introduces **GitHub integration for Jenkins**, enabling automated CI workflows.
+Jenkins can now authenticate with GitHub, fetch the repository, and run the project’s pipeline directly from the `main` branch.
 
-This step prepares the project for automated deployment workflows.
+This step configures secure access, Jenkins credentials, and a working pipeline that automatically clones the repository into Jenkins.
 
 ## 🗂️ **Project Structure (Updated)**
 
 ```text
 LLMOPS-MEDICAL-CHATBOT/
+├── Jenkinsfile               # NEW: Jenkins pipeline configuration
+│
 ├── custom_jenkins/
-│   └── Dockerfile        # NEW: Docker-enabled Jenkins controller image
+│   └── Dockerfile            # Jenkins with Docker-enabled CI support
 │
 ├── app/
-│   └── ...               # Flask UI + RAG pipeline
-│
-├── data/
 │   └── ...
 │
-├── Dockerfile            # App container
 └── ...
 ```
 
 ## ⚙️ **What Was Implemented in This Branch**
 
-### 🐳 1. Created the `custom_jenkins` Directory
+### 🔐 1. Generated a GitHub Personal Access Token
 
-A new directory was added to the project containing a fully documented Dockerfile that constructs a **Jenkins controller image with Docker Engine installed**.
-This allows Jenkins to:
+A GitHub token was created to allow Jenkins to securely pull the repository.
 
-* Build Docker images
-* Run containers during pipelines
-* Push images to container registries
-* Interface with Docker from inside its own container
+The token includes:
 
-### 🛠️ 2. Built the Custom Jenkins Image
+* `repo` scope (full repo access)
+* `admin:repo_hook` scope (for webhook integration)
 
-From inside the `custom_jenkins` folder, the custom Jenkins DinD image is built using:
+This token replaces the need for GitHub passwords and provides secure CI authentication.
+
+### 🔑 2. Added Token to Jenkins Credentials
+
+A new credential named `github-token` was created in:
+
+```
+Jenkins Dashboard → Manage Jenkins → Credentials → Global
+```
+
+Credentials stored:
+
+* Username: GitHub username
+* Password: The GitHub PAT
+* ID: `github-token`
+* Description: `github-token`
+
+This ID is referenced inside the Jenkins pipeline for secure authentication.
+
+### 🛠️ 3. Created a New Pipeline Job in Jenkins
+
+A new Jenkins Pipeline project was created:
+
+* Name: e.g. `medical-rag-pipeline`
+* Type: Pipeline
+
+A placeholder configuration was saved.
+
+<p align="center">
+  <img src="img/github/pipeline_config.png" width="100%">
+</p>
+
+### 🧩 4. Generated Checkout Script Using Jenkins Pipeline Syntax
+
+From the **Pipeline Syntax** helper, Jenkins generated the required Groovy script for cloning the GitHub repo using stored credentials.
+
+Steps:
+
+* SCM: Git
+* URL: GitHub repository
+* Credential: `github-token`
+
+<p align="center">
+  <img src="img/github/pipeline_syntax.png" width="100%">
+</p>
+
+The generated script was copied and used inside the Jenkinsfile.
+
+### 📝 5. Added Jenkinsfile to the Repository
+
+A `Jenkinsfile` was created in the project root containing:
+
+* A declarative pipeline
+* A checkout stage using the correct `github-token`
+* Proper SCM configuration for the `main` branch
+
+This gives Jenkins a reproducible instruction file for CI runs.
+
+### 📤 6. Pushed the Jenkinsfile to GitHub
+
+The Jenkinsfile was committed and pushed:
 
 ```bash
-docker build -t jenkins-dind .
+git add Jenkinsfile
+git commit -m "Add Jenkinsfile for CI pipeline"
+git push origin main
 ```
 
-This produces a reproducible Jenkins environment suitable for CI/CD.
+### 🚀 7. Triggered the First Pipeline Run
 
-### 🚦 3. Launched the Jenkins Container
-
-A runnable Jenkins instance is created with:
-
-```bash
-docker run -d \
-  --name jenkins-dind \
-  --privileged \
-  -p 8080:8080 \
-  -p 50000:50000 \
-  -v //var/run/docker.sock:/var/run/docker.sock \
-  -v jenkins_home:/var/jenkins_home \
-  jenkins-dind
-```
-
-This container:
-
-* Runs in privileged mode
-* Mounts the host Docker socket
-* Uses a persistent Jenkins home volume
-* Exposes the standard Jenkins ports
-
-### 📄 4. Retrieved Initial Jenkins Password
-
-After running the container, logs and admin credentials are retrieved with:
-
-```bash
-docker logs jenkins-dind
-```
-
-or:
-
-```bash
-docker exec jenkins-dind cat /var/jenkins_home/secrets/initialAdminPassword
-```
-
-This password is required for the first login.
-
-### 🖥️ 5. Accessed Jenkins Dashboard
-
-The Jenkins UI is now available at:
+The pipeline was started manually using:
 
 ```
-http://localhost:8080
+Jenkins Dashboard → medical-rag-pipeline → Build Now
 ```
 
-The welcome wizard loads and prompts for plugin installation.
+Once the run completes successfully, Jenkins clones the repository from GitHub into its internal workspace.
 
-### 🐍 6. Installed Python Inside the Jenkins Container
+### 🎉 CI Integration Successful
 
-Since pipelines will run Python code, Python 3 and pip were installed directly into the Jenkins container:
+With this branch:
 
-```bash
-docker exec -u root -it jenkins-dind bash
-apt update -y
-apt install -y python3 python3-pip
-ln -s /usr/bin/python3 /usr/bin/python
-exit
-```
+* GitHub authentication via PAT is enabled
+* Jenkins securely clones the Medical Chatbot repository
+* The CI pipeline now starts with a clean, automated checkout step
+* The groundwork is set for adding build, test, and deployment stages
 
-This ensures that Python-based stages (tests, linting, packaging, ML steps) can run inside Jenkins.
-
-### 🔄 7. Restarted Jenkins to Apply Changes
-
-```bash
-docker restart jenkins-dind
-```
-
-After restarting, Jenkins is ready with full Python + Docker support.
-
-### 🔐 8. Signed in Again and Completed Setup
-
-Final login at:
-
-```
-http://localhost:8080
-```
-
-You can now create pipelines, connect GitHub, and begin setting up automated deployment.
-
-## ✅ **Summary**
-
-This branch delivers the full Jenkins CI/CD foundation:
-
-* Custom Jenkins controller image with Docker installed
-* Containerised Jenkins instance with persistent storage
-* Python environment added inside Jenkins
-* Ready for Docker-based build and deployment pipelines
-
-The project is now set up for the next stage: **configuring Jenkins pipelines**, integrating GitHub, and later deploying to Kubernetes or cloud environments.
+This completes the Jenkins–GitHub integration layer.
