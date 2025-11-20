@@ -1,10 +1,3 @@
-Here is a clean, structured, professional **README for your `templates/` folder**, matching the tone and format of your other project documentation.
-
-No horizontal rules.
-Concise, intuitive, and informative.
-
----
-
 # 📁 `templates/` Folder — HTML Templates Overview
 
 This folder contains all **HTML templates** used by the AI Medical Chatbot Flask application.
