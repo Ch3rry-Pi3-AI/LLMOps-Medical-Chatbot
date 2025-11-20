@@ -1,32 +1,25 @@
-# 🖥️ **Flask Application Layer — LLMOps Medical Chatbot**
+# 🐳 **Dockerisation Layer — LLMOps Medical Chatbot**
 
-This branch introduces the **complete Flask web application layer** for the LLMOps Medical Chatbot.
-It transforms the backend RAG pipeline into a fully interactive browser-based chat interface with a clean layout, user-friendly controls, and full integration with the retrieval system.
+This branch introduces **Docker containerisation** for the LLMOps Medical Chatbot.
+It packages the entire Flask application, RAG pipeline, and supporting modules into a lightweight Python 3.12 container, enabling consistent deployment across all environments including local development, servers, and Kubernetes.
 
-<p align="center">
-  <img src="img/flask/flask_app.gif" alt="Flask Chatbot Demo" width="100%">
-</p>
-
-This is the branch where the project becomes a functional medical chatbot that users can interact with directly through the web.
+By completing this step, the chatbot is now fully portable and can run anywhere Docker is supported.
 
 ## 🗂️ **Project Structure (Updated)**
 
 ```text
 LLMOPS-MEDICAL-CHATBOT/
+├── Dockerfile                 # NEW: Fully documented Python 3.12 Dockerfile
 ├── .venv/
 ├── .env
 ├── .gitignore
-├── .python-version
-├── pyproject.toml
-├── README.md
 ├── requirements.txt
+├── pyproject.toml
 ├── setup.py
-│
 ├── data/
 │   └── The_GALE_ENCYCLOPEDIA_OF_MEDICINE_SECOND.pdf
-│
 └── app/
-    ├── application.py            # NEW: Flask routes, session logic, RAG invocation
+    ├── application.py
     │
     ├── common/
     │   ├── custom_exception.py
@@ -44,96 +37,76 @@ LLMOPS-MEDICAL-CHATBOT/
     │   └── retriever.py
     │
     ├── templates/
-    │   └── index.html            # NEW: Jinja HTML template for chat UI
+    │   └── index.html
     │
     └── static/
-        └── style.css             # NEW: Full UI stylesheet
+        └── style.css
 ```
 
 ## ⚙️ **What Was Implemented in This Branch**
 
-### 🧠 1. `application.py` — Complete Flask Controller
+### 🐍 1. Switched Base Image to `python:3.12-slim`
 
-This module now handles:
+The project now uses a lightweight, secure Python 3.12 environment.
+The base image was updated from 3.10 to 3.12 to match your current local environment and to ensure long-term support.
 
-* Flask app creation
-* Session-based message history
-* The `nl2br` Jinja filter
-* Direct invocation of the RAG retrieval chain
-* Error handling and user-facing notifications
-* Clean message sanitisation
-* GET + POST handling for full chat interaction
-* Clear chat functionality
+### ⚡ 2. Added Full Dockerfile With Documentation
 
-All functions follow your documentation standards:
+A fully documented production-ready Dockerfile was created featuring:
 
-* NumPy-style docstrings
-* Type hints
-* Section-level comment blocks
-* Intuitive inline explanations
+* Python 3.12-slim parent image
+* Disabled `.pyc` bytecode generation
+* Unbuffered Python output for clean logs
+* Build tools installation (`build-essential`, `curl`)
+* Project copied into `/app`
+* `pip install -e .` for editable installs
+* Port 5000 exposed for Flask
+* Launch command:
 
-### 🖥️ 2. `index.html` — Full Chat Interface Template
+  ```
+  CMD ["python", "app/application.py"]
+  ```
 
-The new HTML template includes:
+All instructions follow best practices and include concise inline comments and a NumPy-style header documentation block.
 
-* Title, subtitle, and online status indicator
-* Structured display of user and assistant messages
-* Error banners when backend issues occur
-* Empty-state instructional messages
-* Textarea input with Send and Clear buttons
-* Medical disclaimer footer
-* Auto-scroll JavaScript for usability
+### 📦 3. Project Prepared for Containerised Execution
 
-The template is fully documented with clear, readable comments.
+The entire application can now run inside Docker with a single command:
 
-### 🎨 3. `style.css` — Complete UI Styling
+```
+docker build -t medical-chatbot .
+docker run -p 5000:5000 medical-chatbot
+```
 
-The stylesheet defines the entire look and feel of the chatbot:
+This ensures:
 
-* Centre-aligned card layout
-* Gradient header design
-* Scrollable chat panel with custom scrollbar
-* User and assistant message blocks
-* Button styling and hover transitions
-* Empty-state styling
-* Footer with legal disclaimers
-* Accessibility helpers (e.g., `.sr-only`)
+* Identical environments across development and deployment
+* Isolation from system Python configurations
+* Easy compatibility with CI/CD pipelines and platforms like Kubernetes
 
-It includes a full NumPy-style documentation block and consistent inline comments above each section.
+### 🧹 4. Clean Build Context and Stable Layering
 
-### 🔗 4. Integration With RAG Retrieval Pipeline
+The Dockerfile minimises image layers, cleans up APT cache, and avoids storing pip cache to keep the container small and efficient.
 
-This branch successfully attaches the Flask UI to the underlying LCEL RAG chain.
-When users submit a medical question:
+## 🧪 **Dockerisation Status**
 
-* The RAG retriever fetches context
-* The LLM generates a grounded answer
-* The assistant response appears instantly in the chat UI
+The container builds correctly and runs the chatbot with full UI functionality:
 
-This brings the entire system together into a cohesive user experience.
+* Flask app starts up normally
+* RAG chain loads as expected
+* Message history works
+* Web UI is served on port 5000
+* No bytecode or pip cache clutter in the image
 
-## 🧪 **Application Status**
-
-The chatbot now:
-
-* Loads correctly in the browser
-* Displays messages cleanly
-* Accepts user input
-* Generates responses via the RAG chain
-* Handles and displays errors gracefully
-* Scrolls chat to the most recent message
-* Allows the user to clear the conversation at any time
-
-It is fully functional for local usage.
+The image is stable and suitable for use in later deployment branches.
 
 ## ✅ **Summary**
 
-This branch delivers the **complete front-end application** of the LLMOps Medical Chatbot:
+This branch introduces complete Docker support for the LLMOps Medical Chatbot:
 
-* Flask backend with well-structured routes
-* Fully documented HTML template
-* Fully documented CSS stylesheet
-* Interactive chat UI
-* Working integration with the retrieval-augmented medical answer engine
+* Fully documented Python 3.12 Dockerfile
+* Portable, reproducible execution environment
+* Works seamlessly with Flask, LangChain, embeddings, and vector store
+* Prepares the project for CI/CD and deployment pipelines
 
-The project now operates as a full web-based medical chatbot.
+The chatbot can now be run anywhere — locally, in the cloud, or inside Kubernetes — using a single container.

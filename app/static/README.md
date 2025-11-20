@@ -1,9 +1,3 @@
-Here is a clean, concise, professional **README for your `static/` folder**, written in the same style as your project READMEs — structured, clear, and informative.
-
-No horizontal rules (as per your preference).
-
----
-
 # 📁 `static/` Folder — Front-End Assets Overview
 
 This folder contains all **front-end static assets** used by the AI Medical Chatbot Flask application.
