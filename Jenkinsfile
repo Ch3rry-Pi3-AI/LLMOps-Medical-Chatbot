@@ -141,44 +141,44 @@ pipeline {
            Triggers a new deployment for an existing App Runner service so that
            it pulls the freshly updated container image from ECR.
            -------------------------------------------------------------------- */
-        // stage('Deploy to AWS App Runner') {
-        //     steps {
+        stage('Deploy to AWS App Runner') {
+            steps {
 
-        //         // Use AWS credentials again for App Runner API calls
-        //         withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-token']]) {
-        //             script {
+                // Use AWS credentials again for App Runner API calls
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-token']]) {
+                    script {
 
-        //                 // Query AWS account ID
-        //                 def accountId = sh(
-        //                     script: "aws sts get-caller-identity --query Account --output text",
-        //                     returnStdout: true
-        //                 ).trim()
+                        // Query AWS account ID
+                        def accountId = sh(
+                            script: "aws sts get-caller-identity --query Account --output text",
+                            returnStdout: true
+                        ).trim()
 
-        //                 // Construct repository URL
-        //                 def ecrUrl = "${accountId}.dkr.ecr.${env.AWS_REGION}.amazonaws.com/${env.ECR_REPO}"
-        //                 def imageFullTag = "${ecrUrl}:${IMAGE_TAG}"
+                        // Construct repository URL
+                        def ecrUrl = "${accountId}.dkr.ecr.${env.AWS_REGION}.amazonaws.com/${env.ECR_REPO}"
+                        def imageFullTag = "${ecrUrl}:${IMAGE_TAG}"
 
-        //                 // Info message for Jenkins logs
-        //                 echo "Triggering deployment to AWS App Runner..."
+                        // Info message for Jenkins logs
+                        echo "Triggering deployment to AWS App Runner..."
 
-        //                 // Trigger new deployment on App Runner
-        //                 sh """
-        //                 # Fetch the App Runner service ARN by name
-        //                 SERVICE_ARN=\$(aws apprunner list-services \
-        //                     --query "ServiceSummaryList[?ServiceName=='${SERVICE_NAME}'].ServiceArn" \
-        //                     --output text \
-        //                     --region ${AWS_REGION})
+                        // Trigger new deployment on App Runner
+                        sh """
+                        # Fetch the App Runner service ARN by name
+                        SERVICE_ARN=\$(aws apprunner list-services \
+                            --query "ServiceSummaryList[?ServiceName=='${SERVICE_NAME}'].ServiceArn" \
+                            --output text \
+                            --region ${AWS_REGION})
 
-        //                 echo "Found App Runner Service ARN: \$SERVICE_ARN"
+                        echo "Found App Runner Service ARN: \$SERVICE_ARN"
 
-        //                 # Start a new deployment
-        //                 aws apprunner start-deployment \
-        //                     --service-arn \$SERVICE_ARN \
-        //                     --region ${AWS_REGION}
-        //                 """
-        //             }
-        //         }
-        //     }
-        // }
+                        # Start a new deployment
+                        aws apprunner start-deployment \
+                            --service-arn \$SERVICE_ARN \
+                            --region ${AWS_REGION}
+                        """
+                    }
+                }
+            }
+        }
     }
 }
