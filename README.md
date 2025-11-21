@@ -1,192 +1,131 @@
-# 🐳 **Docker Build, Trivy Scan, and AWS ECR Push — LLMOps Medical Chatbot**
+# 🌐 **AWS App Runner Deployment — LLMOps Medical Chatbot**
 
-This branch introduces the full **container security and deployment workflow** for the Medical Chatbot.
-Jenkins is now capable of:
+This branch introduces the final deployment layer of the LLMOps Medical Chatbot: **hosting your containerised RAG application on AWS App Runner**, fully connected to your Jenkins CI/CD pipeline.
 
-* Building the Docker image
-* Scanning it for vulnerabilities using **Trivy**
-* Authenticating with AWS
-* Tagging and pushing the image to **Amazon ECR**
+With the previous branches handling project setup, utility functions, RAG components, Flask application, Docker packaging, and Jenkins + ECR integration, this final stage enables **push-to-deploy automation** into the cloud.
 
-This prepares the project for automated container deployment on AWS infrastructure.
+<p align="center">
+  <img src="img/runner/services_success.png" alt="AWS App Runner Success" width="100%">
+</p>
+
+Your LLM-powered medical chatbot is now deployed globally, publicly accessible, and continuously updated on every push.
 
 ## 🗂️ **Project Structure (Updated)**
 
 ```text
 LLMOPS-MEDICAL-CHATBOT/
-├── Jenkinsfile                 # NEW: ECR build, scan, push stage included
+├── app/
+│   ├── application.py          # Flask entrypoint
+│   ├── components/
+│   ├── common/
+│   ├── config/
+│   ├── templates/
+│   └── static/
+│
 ├── custom_jenkins/
-│   └── Dockerfile              # Jenkins controller with Docker + Python
-├── img/
-└── ...
+│   ├── Dockerfile              # Jenkins-with-Docker-capable build agent
+│   └── README.md
+│
+├── Jenkinsfile                 # Now includes AWS App Runner deployment stage
+├── requirements.txt
+├── setup.py
+├── pyproject.toml
+└── README.md
 ```
 
-## ⚙️ **What Was Implemented in This Branch**
+## 🚀 **What Was Completed in This Branch**
 
-### 🔍 1. Installed Trivy Inside the Jenkins Container
+### 1. Added IAM Permissions for Deployment
 
-The Jenkins controller was updated to include **Trivy**, enabling high-severity and critical vulnerability scanning of built Docker images:
+An IAM user was configured with:
 
-```bash
-docker exec -u root -it jenkins-dind bash
-apt install -y
-curl -LO https://github.com/aquasecurity/trivy/releases/download/v0.62.1/trivy_0.62.1_Linux-64bit.deb
-dpkg -i trivy_0.62.1_Linux-64bit.deb
-trivy --version
-exit
-```
+* `AWSAppRunnerFullAccess`
+* Previously required policies (`AmazonEC2ContainerRegistryFullAccess`) remain in place
 
-A successful installation shows:
+This allows Jenkins to trigger App Runner deployments programmatically.
 
-```
-Version: 0.62.1
-```
+### 2. Configured a New AWS App Runner Service
 
-The container was then restarted:
+Through the AWS console:
 
-```bash
-docker restart jenkins-dind
-```
-
-### 🔌 2. Installed AWS Plugins in Jenkins UI
-
-Inside Jenkins, the following plugins were installed:
-
-* **Amazon Web Services SDK :: All**
-* **AWS Credentials**
-
-This enables IAM authentication and AWS CLI integration.
-
-After plugin installation, the Jenkins container was restarted:
-
-```bash
-docker restart jenkins-dind
-```
-
-### 👤 3. Created IAM User in AWS for ECR Access
-
-An IAM user named **rag-medical** was created with the policy:
-
-* `AmazonEC2ContainerRegistryFullAccess`
+* Selected **Amazon ECR** as the deployment source
+* Chose the `my-repo` image produced by Jenkins
+* Created a new App Runner service role
+* Set runtime, CPU/memory, and environment variables
+* Enabled public network access for external reachability
 
 <p align="center">
-  <img src="img/aws/permissions.png" width="100%">
+  <img src="img/runner/source_deployment.png" width="100%">
 </p>
-
-An **Access Key ID + Secret Access Key** pair was generated for use in Jenkins.
-
-### 🔐 4. Added AWS Credentials to Jenkins
-
-Inside Jenkins:
-
-```
-Dashboard → Manage Jenkins → Credentials → Global → Add Credentials
-```
-
-* Select type: **AWS Credentials**
-* Add Access Key ID + Secret Access Key
-* Use ID: `aws-token`
 
 <p align="center">
-  <img src="img/aws/jenkins_aws_token.png" width="100%">
+  <img src="img/runner/configure.png" width="100%">
 </p>
-
-These credentials allow Jenkins to authenticate to AWS for pushing container images.
-
-### ☁️ 5. Installed AWS CLI Inside Jenkins Container
-
-The Jenkins controller was upgraded to include AWS CLI v2:
-
-```bash
-docker exec -u root -it jenkins-dind bash
-apt update
-apt install -y unzip curl
-curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-unzip awscliv2.zip
-./aws/install
-aws --version
-exit
-```
-
-A successful install outputs something like:
-
-```
-aws-cli/2.32.2 Python/3.13.9 ...
-```
-
-Restarted Jenkins:
-
-```bash
-docker restart jenkins-dind
-```
-
-### 📦 6. Created an ECR Repository
-
-Inside AWS ECR:
-
-* Create Repository
-* Name: **my-repo**
-* Copy the repository URI for use in the Jenkins pipeline
-
-### 🔧 7. Added the Build → Scan → Push Stage to Jenkinsfile
-
-The Jenkinsfile now includes:
-
-* AWS authentication
-* Docker build
-* Trivy vulnerability scan
-* ECR tagging
-* ECR push
-* Archiving of the Trivy report
-
-This stage runs automatically whenever the pipeline is triggered.
-
-### 🔒 8. Fixed Docker Daemon Permissions (If Needed)
-
-If Trivy or Docker commands failed due to socket access, permissions were corrected:
-
-```bash
-docker exec -u root -it jenkins-dind bash
-chown root:docker /var/run/docker.sock
-chmod 660 /var/run/docker.sock
-usermod -aG docker jenkins
-exit
-
-docker restart jenkins-dind
-```
-
-### 📸 9. Verified Image in AWS ECR
-
-Upon successful pipeline completion, the new container image appears in AWS ECR:
 
 <p align="center">
-  <img src="img/aws/repo_image.png" width="100%">
+  <img src="img/runner/networking.png" width="100%">
 </p>
 
-### 🛡️ 10. Retrieved and Viewed Trivy Report
+### 3. Finalised CI/CD Integration with Jenkins
 
-Inside Jenkins:
+With the final stage added to the Jenkinsfile, the pipeline now performs:
 
+1. 📥 **Checkout** from GitHub
+2. 🐳 **Build Docker image**
+3. 🔍 **Trivy security scan**
+4. 📤 **Push to ECR**
+5. 🚀 **Trigger AWS App Runner deployment**
+
+The deployment stage automatically calls:
+
+```bash
+aws apprunner start-deployment
 ```
-Pipeline Run → Workspace
-```
 
-A JSON report is generated:
+fully automating the rollout of new images.
+
+### 4. Validated Health Checks and Deployment Logs
+
+AWS App Runner logs confirmed:
+
+* Container launched successfully
+* Flask app served on port `5000`
+* Health checks passed
+* Traffic routed correctly
+
+Resulting in production availability:
 
 <p align="center">
-  <img src="img/aws/trivy_report.png" width="100%">
+  <img src="img/runner/services_success.png" width="100%">
 </p>
 
-This report lists HIGH and CRITICAL vulnerabilities detected by Trivy.
+## 🧪 **End-to-End Deployment Workflow**
 
-## ✅ **Summary**
+After pushing changes to GitHub:
 
-This branch completes the full container security and publishing pipeline:
+1. GitHub triggers Jenkins
+2. Jenkins executes the full build + scan + push + deploy pipeline
+3. A new image is uploaded to ECR
+4. App Runner automatically deploys the new version
+5. The service becomes publicly accessible within minutes
 
-* Jenkins builds the Docker image
-* Trivy scans it for vulnerabilities
-* AWS CLI authenticates with IAM
-* Docker image is tagged and pushed to AWS ECR
-* Trivy JSON report is archived for auditing
+Your application is now:
 
-Your system is now fully prepared for cloud deployment and automated image lifecycle management.
+* Fully containerised
+* Security-scanned
+* AWS-hosted
+* Auto-deploying
+* Production-ready
+
+## 🎉 **Summary**
+
+This branch completes the final step of the LLMOps Medical Chatbot project:
+
+* Cloud-hosted deployment on AWS App Runner
+* Fully automated CI/CD pipeline
+* Secure build + scan + push process
+* Publicly accessible RAG medical chatbot
+
+Your system now runs end-to-end with true enterprise-style reliability and automation.
+
+🚀 **Congratulations — your full LLMOps pipeline is live and complete.**
